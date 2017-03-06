@@ -1,6 +1,5 @@
-// Назначаем API REST endpoint и говорим что в нем будет
-var KermitModel = Backbone.Model.extend({
-  url: '/muppets/1',
+// Создаем модель
+var MuppetModel = Backbone.Model.extend({
   defaults: {
     id: null,
     name: null,
@@ -8,13 +7,15 @@ var KermitModel = Backbone.Model.extend({
   }
 });
 
-// Создаем объект
-var kermit = new KermitModel();
+// У нас в /muppets создан некий REST сервис отдающий json
+var MuppetsCollection = Backbone.Collection.extend({
+  url: '/muppets',
+  model: MuppetModel
+});
 
-// Начинаем использовать
-kermit.fetch().then(function() {
-  kermit.get('name'); // >> "Kermit"
-  kermit.get('occupation'); // >> "being green"
-  kermit.set('occupation', 'muppet ringleader');
-  kermit.save();
+var muppets = new MuppetsCollection();
+
+// Вызываем REST API
+muppets.fetch().then(function() {
+  console.log(muppets.length); // >> length: 1
 });
