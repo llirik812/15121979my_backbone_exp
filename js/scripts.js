@@ -10,7 +10,10 @@ var MuppetModel = Backbone.Model.extend({
 // У нас в /muppets создан некий REST сервис отдающий json
 var MuppetsCollection = Backbone.Collection.extend({
   url: '/muppets',
-  model: MuppetModel
+  model: MuppetModel,
+  parse: function(data) {
+    return data.muppets;
+  }
 });
 
 var muppets = new MuppetsCollection();
