@@ -1,3 +1,8 @@
+// Customizing underscore template
+_.templateSettings = {
+    interpolate : /\{\{(.+?)\}\}/g
+};
+
 function init() {
 
 // ######################## kermit-view #####################################
@@ -20,9 +25,10 @@ function init() {
       },
 
       render: function() {
-        var html = '<b>Name:</b> ' + this.model.get('name');
-        html += ', <b>Occupation:</b> ' + this.model.get('occupation');
-        this.$el.html(html);
+        this.$el.html(_.template($('#muppet-item-tmpl').html())({
+            name : this.model.get('name'),
+            occupation : this.model.get('occupation')
+        }));
         return this;
       }
     });
@@ -49,7 +55,7 @@ function init() {
     var MuppetsListView = Backbone.View.extend({
         el: '#muppets-list',
         initialize : function() {
-            console.log(this.model);
+            console.log(this.collection);
         }
     });
 
