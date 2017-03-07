@@ -16,25 +16,44 @@ function init() {
         }
     });
     var KermitView = Backbone.View.extend({
-      el: '#kermit-view',
-
-      initialize: function() {
-        this.listenTo(this.model, 'sync change', this.render);
-        var self = this;
-        this.model.fetch().then(function() {
-            self.render();
-        });
-      },
-
-      render: function() {
-        var template = _.template($('#muppet-item-tmpl').html());
-        var compiled = template(this.model.toJSON());
-        this.$el.html(compiled);
-        return this;
-      }
+        el: '#kermit-view',
+        template: _.template($('#muppet-item-tmpl').html()),
+        initialize: function() {
+            this.listenTo(this.model, 'sync change', this.render);
+            var self = this;
+            this.model.fetch();
+        },
+        render: function() {
+            console.log('rendered ...');
+            this.$el.html(this.template(this.model.toJSON()));
+            return this;
+        }
     });
     var kermit = new KermitModel();
     var kermitView = new KermitView({model: kermit});
+
+// ######################## kermit-events-view ###############################
+
+    var KermitEventsView = Backbone.View.extend({
+        el: '#kermit-ui-view',
+
+        events: {
+            'change .name': 'onChangeName',
+            'change .occupation': 'onChangeOccupation',
+        },
+
+        onChangeName: function(evt) {
+            console.log('onChangeName');
+            this.model.set('name', evt.currentTarget.value);
+        },
+
+        onChangeOccupation: function(evt) {
+            console.log('onChangeOccupations');
+            this.model.set('occupation', evt.currentTarget.value);
+        }
+    });
+
+    var kermitEventsView = new KermitEventsView({model: kermit});
 
 // ######################## mappets-list #####################################
 
