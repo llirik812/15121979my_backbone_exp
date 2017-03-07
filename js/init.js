@@ -20,15 +20,16 @@ function init() {
 
       initialize: function() {
         this.listenTo(this.model, 'sync change', this.render);
-        this.model.fetch();
-        this.render();
+        var self = this;
+        this.model.fetch().then(function() {
+            self.render();
+        });
       },
 
       render: function() {
-        this.$el.html(_.template($('#muppet-item-tmpl').html())({
-            name : this.model.get('name'),
-            occupation : this.model.get('occupation')
-        }));
+        var template = _.template($('#muppet-item-tmpl').html());
+        var compiled = template(this.model.toJSON());
+        this.$el.html(compiled);
         return this;
       }
     });
