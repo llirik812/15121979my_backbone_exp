@@ -1,92 +1,90 @@
-// Customizing underscore template
-_.templateSettings = {
-    interpolate : /\{\{(.+?)\}\}/g
-};
-
-function init() {
-
-// ######################## kermit-view #####################################
-
-    var KermitModel = Backbone.Model.extend({
-        url : '/muppets/1',
-        defaults : {
-            id: null,
-            name: null,
-            occupation: null
-        }
-    });
-    var KermitView = Backbone.View.extend({
-        el: '#kermit-view',
-        template: _.template($('#muppet-item-tmpl').html()),
-        initialize: function() {
-            this.listenTo(this.model, 'sync change', this.render);
-            var self = this;
-            this.model.fetch();
-        },
-        render: function() {
-            console.log('rendered ...');
-            this.$el.html(this.template(this.model.toJSON()));
-            return this;
-        }
-    });
-    var kermit = new KermitModel();
-    var kermitView = new KermitView({model: kermit});
-
-// ######################## kermit-events-view ###############################
-
-    var KermitEventsView = Backbone.View.extend({
-        el: '#kermit-ui-view',
-
-        events: {
-            'change .name': 'onChangeName',
-            'change .occupation': 'onChangeOccupation',
-        },
-
-        onChangeName: function(evt) {
-            console.log('onChangeName');
-            this.model.set('name', evt.currentTarget.value);
-        },
-
-        onChangeOccupation: function(evt) {
-            console.log('onChangeOccupations');
-            this.model.set('occupation', evt.currentTarget.value);
-        }
-    });
-
-    var kermitEventsView = new KermitEventsView({model: kermit});
-
-// ######################## mappets-list #####################################
-
-    var MuppetModel = Backbone.Model.extend({
-        defaults: {
-            id: null,
-            name: null,
-            occupation: null
-        }
-    });
-    var MuppetsCollection = Backbone.Collection.extend({
-        url: '/muppets',
-        model: MuppetModel,
-        parse: function(data) {
-            return data.muppets;
-        }
-    });
-
-    var MuppetsListView = Backbone.View.extend({
-        el: '#muppets-list',
-        initialize : function() {
-            console.log(this.collection);
-        }
-    });
-
-    var muppetsList = new MuppetsCollection();
-    var muppetsView = new MuppetsListView({
-        collection: muppetsList
-    });
-    muppetsView.$el.append('<li>Hello World</li>');
-
-}
-
 $(window.document).ready(function() {
-    init();
+
+var MuppetModel = Backbone.Model.extend({
+  defaults: {
+    id: null,
+    name: null,
+    occupation: null
+  }
+});
+
+// Collection class for the Muppets list endpoint
+var MuppetCollection = Backbone.Collection.extend({
+  model: MuppetModel,
+  url: '/muppets',
+
+  parse: function(data) {
+    return data.muppets;
+  }
+});
+
+// View class for displaying each muppet list item
+var MuppetsListItemView = Backbone.View.extend({
+  tagName: 'li',
+  className: 'muppet',
+  template: _.template($('#muppet-item-tmpl').html()),
+
+  initialize: function() {
+    this.listenTo(this.model, 'destroy', this.remove)
+  },
+
+  render: function() {
+    var html = this.template(this.model.toJSON());
+    this.$el.html(html);
+    return this;
+  },
+
+  events: {
+    'click .remove': 'onRemove'
+  },
+
+  onRemove: function() {
+    this.model.destroy();
+  }
+});
+
+// View class for rendering the list of all muppets
+var MuppetsListView = Backbone.View.extend({
+  el: '#muppets-app',
+
+  initialize: function() {
+    this.listenTo(this.collection, 'sync', this.render);
+  },
+
+  render: function() {
+    var $list = this.$('ul.muppets-list').empty();
+
+    this.collection.each(function(model) {
+      var item = new MuppetsListItemView({model: model});
+      $list.append(item.render().$el);
+    }, this);
+
+    return this;
+  },
+
+  events: {
+    'click .create': 'onCreate'
+  },
+
+  onCreate: function() {
+    var $name = this.$('#muppet-name');
+    var $job = this.$('#muppet-job');
+
+    if ($name.val()) {
+      this.collection.create({
+        name: $name.val(),
+        occupation: $job.val()
+      });
+
+      $name.val('');
+      $job.val('');
+    }
+  }
+});
+
+// Create a new list collection, a list view, and then fetch list data:
+var muppetsList = new MuppetCollection();
+var muppetsView = new MuppetsListView({collection: muppetsList});
+muppetsList.fetch();
+
 });
